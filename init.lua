@@ -75,6 +75,7 @@ require 'mini.surround'.setup()
 require 'mini.bracketed'.setup()
 require 'mini.statusline'.setup()
 require 'mini.tabline'.setup()
+require 'mini.completion'.setup()
 require 'mini.indentscope'.setup({
   draw = {
     -- Delay (in ms) between event and start of drawing scope indicator
@@ -218,11 +219,15 @@ vim.lsp.config("vscode-css-language-server", {
 })
 vim.lsp.config("typescript-language-server", {
   cmd = { 'typescript-language-server', '--stdio' },
-  filetypes = { 'js', 'es6' },
+  filetypes = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact' },
 })
 vim.lsp.config("rust-analyzer", {
   cmd = { 'rust-analyzer', '--stdio' },
   filetypes = { 'rust' },
+})
+vim.lsp.config("haskell-language-server", {
+  cmd = { 'haskell-language-server' },
+  filetypes = { 'haskell' },
 })
 vim.lsp.enable({
   "php",
