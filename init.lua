@@ -46,6 +46,9 @@ vim.o.conceallevel = 1
 vim.g.tidal_target = "terminal"
 vim.g.tidal_boot = "/home/zazzy/tidal/BootTidal.hs"
 
+-- Hoogle-based completion for TidalCycles
+require('tidal_hoogle').setup()
+
 vim.keymap.set('n', '<leader>w', ':write<CR>')
 vim.keymap.set('n', '<leader>q', ':quit<CR>')
 vim.keymap.set('n', '<leader>bw', ':bw<CR>')
