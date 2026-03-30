@@ -1,0 +1,5 @@
+# Environment-specific marker file - don't sync this
+.nvim_env
+
+# Plugin data
+nvim-pack-lock.json
