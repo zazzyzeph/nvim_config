@@ -56,6 +56,10 @@
       "rev": "b9fd5226c2f76c951fc8ed5923d85e4de065e509",
       "src": "https://github.com/nvim-lua/plenary.nvim"
     },
+    "tree-sitter-supercollider": {
+      "rev": "2b03ff49dd19b046add072d0861c4d1ca8a384c8",
+      "src": "https://github.com/madskjeldgaard/tree-sitter-supercollider"
+    },
     "typst-preview.nvim": {
       "rev": "291972a39db85c5d2e76249748aba4206dfd3bc2",
       "src": "https://github.com/chomosuke/typst-preview.nvim"
