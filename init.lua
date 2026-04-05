@@ -12,19 +12,25 @@ if not vim.loop.fs_stat(mini_path) then
   vim.cmd('echo "Installed `mini.nvim`" | redraw')
 end
 
--- Detect environment (work or personal)
-local env = require('env')
+-- default to the 'personal' config
+local env = "personal"
 
--- Display current environment at startup
-vim.notify('Environment: ' .. env.current, vim.log.levels.INFO)
+-- Detect environment
+local marker_file = vim.fn.stdpath('config') .. '/.nvim_env'
+if vim.fn.filereadable(marker_file) == 1 then
+  env = vim.fn.readfile(marker_file)[1]
+  if env then
+    env = env:gsub('^%s*(.-)%s*$', '%1') -- trim whitespace
+  end
+end
 
 -- Load shared configuration
 require('shared').setup()
 
 -- Load environment-specific configuration
-if env.is('work') then
+if env == 'work' then
   require('work').setup()
-elseif env.is('personal') then
+elseif env == 'personal' then
   require('personal').setup()
 end
 

@@ -1,7 +1,7 @@
 -- Personal-specific Neovim configuration (Host machine)
-local M = {}
+local Z = {}
 
-function M.setup()
+function Z.setup()
   -- Personal-specific plugins
   vim.pack.add({
     { src = 'https://github.com/tidalcycles/vim-tidal' },
@@ -52,4 +52,4 @@ function M.setup()
   })
 end
 
-return M
+return Z

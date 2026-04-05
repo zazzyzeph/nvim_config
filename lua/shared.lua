@@ -1,7 +1,7 @@
 -- Shared configuration for both work and personal environments
-local M = {}
+local Z = {}
 
-function M.setup()
+function Z.setup()
   -- Basic settings
   vim.o.number = true
   vim.o.relativenumber = true
@@ -168,4 +168,4 @@ function M.setup()
   vim.diagnostic.config({ virtual_text = true })
 end
 
-return M
+return Z

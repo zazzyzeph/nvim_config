@@ -1,7 +1,7 @@
 -- Work-specific Neovim configuration (Vagrant VM)
-local M = {}
+local Z = {}
 
-function M.setup()
+function Z.setup()
   -- Work-specific plugins (if any)
   vim.pack.add({
     { src = 'https://github.com/mfussenegger/nvim-dap' },
@@ -56,4 +56,4 @@ function M.setup()
   })
 end
 
-return M
+return Z
