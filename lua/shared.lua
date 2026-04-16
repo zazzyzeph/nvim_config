@@ -47,6 +47,7 @@ function Z.setup()
     { src = 'https://github.com/rafamadriz/friendly-snippets' },
     { src = 'https://github.com/windwp/nvim-autopairs' },
     { src = 'https://github.com/nvim-lua/plenary.nvim' },
+    { src = 'https://github.com/m4xshen/hardtime.nvim' },
   })
 
   -- Mini.nvim setup
