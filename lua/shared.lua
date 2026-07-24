@@ -53,10 +53,24 @@ function Z.setup()
   vim.keymap.set({ 'n', 'v', 'x' }, '<leader>y', '"+y<CR>')
   vim.keymap.set({ 'n', 'v', 'x' }, '<leader>d', '"+d<CR>')
 
+  -- Shared plugins
+  vim.pack.add({
+    { src = 'https://github.com/nvim-treesitter/nvim-treesitter' },
+    { src = 'https://github.com/ellisonleao/gruvbox.nvim' },
+    { src = 'https://github.com/neovim/nvim-lspconfig' },
+    { src = 'https://github.com/mason-org/mason.nvim' },
+    -- this isn't working how i want '{ src = 'https://github.com/tpope/vim-sleuth' },
+    { src = 'https://github.com/rafamadriz/friendly-snippets' },
+    { src = 'https://github.com/windwp/nvim-autopairs' },
+    { src = 'https://github.com/nvim-lua/plenary.nvim' },
+    { src = 'https://github.com/m4xshen/hardtime.nvim' },
+  })
+
   -- Mini.nvim setup
   require 'mason'.setup()
   require 'Comment'.setup()
   require 'mini.pick'.setup()
+  require 'mini.extra'.setup()
   require 'mini.files'.setup()
   require 'mini.icons'.setup()
   require 'mini.ai'.setup()
@@ -110,6 +124,12 @@ function Z.setup()
     highlight = { enable = true },
   })
   vim.treesitter.language.register('javascript', 'es6')
+
+  vim.filetype.add({
+    extension = {
+      es6 = "javascript",
+    },
+  })
 
   -- LSP setup
   vim.api.nvim_create_autocmd('LspAttach', {
