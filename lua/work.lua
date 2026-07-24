@@ -1,12 +1,14 @@
 -- Work-specific Neovim configuration (Vagrant VM)
 local Z = {}
 
-function Z.setup()
-  -- Work-specific plugins (if any)
+-- Install work plugins (called before setup)
+function Z.install_plugins()
   vim.pack.add({
     { src = 'https://github.com/mfussenegger/nvim-dap' },
   })
+end
 
+function Z.setup()
   -- PHP DAP configuration for work environment
   local dap = require 'dap'
   dap.adapters.php = {

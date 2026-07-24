@@ -24,10 +24,18 @@ if vim.fn.filereadable(marker_file) == 1 then
   end
 end
 
--- Load shared configuration
+-- Install all plugins first (before any setup that might use them)
+require('shared').install_plugins()
+if env == 'work' then
+  require('work').install_plugins()
+elseif env == 'personal' then
+  require('personal').install_plugins()
+end
+
+-- Then load shared configuration
 require('shared').setup()
 
--- Load environment-specific configuration
+-- Finally load environment-specific configuration
 if env == 'work' then
   require('work').setup()
 elseif env == 'personal' then
