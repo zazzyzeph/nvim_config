@@ -52,6 +52,7 @@ function Z.setup()
   vim.keymap.set('n', '<leader>bw', ':bw<CR>')
   vim.keymap.set({ 'n', 'v', 'x' }, '<leader>y', '"+y<CR>')
   vim.keymap.set({ 'n', 'v', 'x' }, '<leader>d', '"+d<CR>')
+  vim.keymap.set({ 'n', 'v', 'x' }, '<leader>d', '"+d<CR>')
 
   -- Shared plugins
   vim.pack.add({
@@ -185,6 +186,11 @@ function Z.setup()
   vim.keymap.set('n', '<leader>e', ':lua MiniFiles.open()<CR>')
   vim.keymap.set("n", "<leader>l", ':bnext<CR>')
   vim.keymap.set("n", "<leader>h", ':bprevious<CR>')
+
+  -- copy relative path to clipboard
+  vim.keymap.set("n", "<leader>yf", function()
+    vim.fn.setreg("+", vim.fn.expand("%"))
+  end, { desc = "Yank file path to clipboard" })
 
   -- Colorscheme
   vim.cmd('colorscheme gruvbox')
