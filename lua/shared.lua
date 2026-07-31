@@ -50,9 +50,14 @@ function Z.setup()
   vim.keymap.set('n', '<leader>w', ':write<CR>')
   vim.keymap.set('n', '<leader>q', ':quit<CR>')
   vim.keymap.set('n', '<leader>bw', ':bw<CR>')
-  vim.keymap.set({ 'n', 'v', 'x' }, '<leader>y', '"+y<CR>')
-  vim.keymap.set({ 'n', 'v', 'x' }, '<leader>d', '"+d<CR>')
-  vim.keymap.set({ 'n', 'v', 'x' }, '<leader>d', '"+d<CR>')
+  vim.keymap.set({ 'n', 'v', 'x' }, '<leader>yy', '"+y<CR>')
+  vim.keymap.set({ 'n', 'v', 'x' }, '<leader>xx', '"+d<CR>')
+
+  -- Window navigation
+  vim.keymap.set('n', '<C-h>', '<C-w>h')
+  vim.keymap.set('n', '<C-j>', '<C-w>j')
+  vim.keymap.set('n', '<C-k>', '<C-w>k')
+  vim.keymap.set('n', '<C-l>', '<C-w>l')
 
   -- Shared plugins
   vim.pack.add({
@@ -70,6 +75,7 @@ function Z.setup()
   -- Mini.nvim setup
   require 'mason'.setup()
   require 'Comment'.setup()
+  require 'hardtime'.setup()
   require 'mini.pick'.setup()
   require 'mini.extra'.setup()
   require 'mini.files'.setup()
@@ -145,6 +151,20 @@ function Z.setup()
         client.server_capabilities.completionProvider.triggerCharacters = chars
         vim.lsp.completion.enable(true, client.id, args.buf, { autotrigger = true })
       end
+
+      -- mini.operators claims `gr` for its replace operator and removes Neovim's
+      -- default grn/gra/gri/grr/grt LSP maps, so re-home them under <leader>l
+      local opts = { buffer = args.buf }
+      vim.keymap.set('n', '<leader>lr', vim.lsp.buf.rename, opts)
+      vim.keymap.set({ 'n', 'x' }, '<leader>la', vim.lsp.buf.code_action, opts)
+      vim.keymap.set('n', '<leader>lR', vim.lsp.buf.references, opts)
+      vim.keymap.set('n', '<leader>li', vim.lsp.buf.implementation, opts)
+      vim.keymap.set('n', '<leader>lt', vim.lsp.buf.type_definition, opts)
+      vim.keymap.set('n', '<leader>ld', vim.lsp.buf.definition, opts)
+      vim.keymap.set('n', '<leader>ls', vim.lsp.buf.document_symbol, opts)
+      vim.keymap.set('n', '<leader>lh', vim.lsp.buf.hover, opts)
+      vim.keymap.set('n', '<leader>le', vim.diagnostic.open_float, opts)
+      vim.keymap.set('i', '<C-k>', vim.lsp.buf.signature_help, opts)
     end,
   })
   vim.cmd('set completeopt+=noselect')
@@ -183,9 +203,9 @@ function Z.setup()
   vim.keymap.set("n", '<leader>fg', ':Pick grep_live<CR>')
   vim.keymap.set("n", '<leader>fr', ':Pick resume<CR>')
   vim.keymap.set('n', '<leader>fh', ':Pick help<CR>')
+  vim.keymap.set('n', '<leader>fb', ':Pick buffers<CR>')
   vim.keymap.set('n', '<leader>e', ':lua MiniFiles.open()<CR>')
-  vim.keymap.set("n", "<leader>l", ':bnext<CR>')
-  vim.keymap.set("n", "<leader>h", ':bprevious<CR>')
+  -- buffer nav moved to mini.bracketed's ]b / [b, freeing <leader>l as an LSP prefix below
 
   -- copy relative path to clipboard
   vim.keymap.set("n", "<leader>yf", function()

@@ -91,8 +91,8 @@ function Z.setup()
       send_visual = { mode = { "x" }, key = "<S-CR>" },
       send_block = { mode = { "i", "n", "x" }, key = "<M-CR>" },
       send_node = { mode = "n", key = "<leader><CR>" },
-      send_silence = { mode = "n", key = "<leader>d" },
-      send_hush = { mode = "n", key = "<leader><Esc>" },
+      send_silence = { mode = "n", key = "<leader>ms" },
+      send_hush = { mode = "n", key = "<leader>mh" },
     },
     ---- Configure highlight applied to selections sent to tidal interpreter
     selection_highlight = {
@@ -104,6 +104,15 @@ function Z.setup()
       timeout = 150,
     },
   })
+
+  -- Tidal session management
+  vim.keymap.set('n', '<leader>mq', ':TidalQuit<CR>', { desc = 'Quit Tidal session' })
+  vim.keymap.set('n', '<leader>ml', function()
+    vim.cmd('TidalLaunch')
+    vim.cmd('TidalNotification')
+    vim.cmd('vsplit')
+    vim.cmd('terminal sclang ~/tidal/startup.scd')
+  end, { desc = 'Launch Tidal + SuperCollider' })
 end
 
 return Z
