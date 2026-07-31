@@ -108,12 +108,15 @@ function Z.setup()
   -- Tidal session management
   vim.keymap.set('n', '<leader>mq', ':TidalQuit<CR>', { desc = 'Quit Tidal session' })
   vim.keymap.set('n', '<leader>ml', function()
+    local splitright = vim.o.splitright
+    vim.o.splitright = true
     vim.cmd('TidalLaunch')
     vim.cmd('TidalNotification')
     vim.cmd('belowright split')
     vim.cmd('terminal sclang ~/tidal/startup.scd')
     vim.cmd('vertical resize ' .. math.floor(vim.o.columns * 0.3))
-    vim.cmd('wincmd l')
+    vim.o.splitright = splitright
+    vim.cmd('wincmd h')
   end, { desc = 'Launch Tidal + SuperCollider' })
 end
 
