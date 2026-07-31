@@ -113,6 +113,7 @@ function Z.setup()
     vim.cmd('belowright split')
     vim.cmd('terminal sclang ~/tidal/startup.scd')
     vim.cmd('vertical resize ' .. math.floor(vim.o.columns * 0.3))
+    vim.cmd('wincmd l')
   end, { desc = 'Launch Tidal + SuperCollider' })
 end
 
