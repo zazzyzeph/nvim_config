@@ -114,6 +114,14 @@ function Z.setup()
     vim.cmd('TidalNotification')
     vim.cmd('belowright split')
     vim.cmd('terminal sclang ~/tidal/startup.scd')
+    local term_buf = vim.api.nvim_get_current_buf()
+    vim.api.nvim_buf_attach(term_buf, false, {
+      on_lines = function(_, buf)
+        for _, win in ipairs(vim.fn.win_findbuf(buf)) do
+          vim.api.nvim_win_set_cursor(win, { vim.api.nvim_buf_line_count(buf), 0 })
+        end
+      end,
+    })
     vim.cmd('vertical resize ' .. math.floor(vim.o.columns * 0.4))
     vim.o.splitright = splitright
     vim.cmd('wincmd h')
