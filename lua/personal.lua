@@ -110,7 +110,7 @@ function Z.setup()
   vim.keymap.set('n', '<leader>ml', function()
     vim.cmd('TidalLaunch')
     vim.cmd('TidalNotification')
-    vim.cmd('vsplit')
+    vim.cmd('split')
     vim.cmd('terminal sclang ~/tidal/startup.scd')
   end, { desc = 'Launch Tidal + SuperCollider' })
 end
