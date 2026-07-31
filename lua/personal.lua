@@ -114,7 +114,7 @@ function Z.setup()
     vim.cmd('TidalNotification')
     vim.cmd('belowright split')
     vim.cmd('terminal sclang ~/tidal/startup.scd')
-    vim.cmd('vertical resize ' .. math.floor(vim.o.columns * 0.3))
+    vim.cmd('vertical resize ' .. math.floor(vim.o.columns * 0.4))
     vim.o.splitright = splitright
     vim.cmd('wincmd h')
   end, { desc = 'Launch Tidal + SuperCollider' })
