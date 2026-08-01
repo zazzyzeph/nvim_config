@@ -12,7 +12,7 @@ function Z.install_plugins()
     { src = 'https://github.com/rafamadriz/friendly-snippets' },
     { src = 'https://github.com/windwp/nvim-autopairs' },
     { src = 'https://github.com/nvim-lua/plenary.nvim' },
-    { src = 'https://github.com/m4xshen/hardtime.nvim' },
+    -- { src = 'https://github.com/m4xshen/hardtime.nvim' },
     { src = 'https://github.com/numToStr/Comment.nvim' },
   })
 end
@@ -69,13 +69,13 @@ function Z.setup()
     { src = 'https://github.com/rafamadriz/friendly-snippets' },
     { src = 'https://github.com/windwp/nvim-autopairs' },
     { src = 'https://github.com/nvim-lua/plenary.nvim' },
-    { src = 'https://github.com/m4xshen/hardtime.nvim' },
+    -- { src = 'https://github.com/m4xshen/hardtime.nvim' },
   })
 
   -- Mini.nvim setup
   require 'mason'.setup()
   require 'Comment'.setup()
-  require 'hardtime'.setup()
+  -- require 'hardtime'.setup()
   require 'mini.pick'.setup()
   require 'mini.extra'.setup()
   require 'mini.files'.setup()
