@@ -132,6 +132,26 @@ function Z.setup()
   })
   vim.treesitter.language.register('javascript', 'es6')
 
+  -- nvim-treesitter master is archived and its `#downcase!` directive still assumes
+  -- match[id] is a single TSNode. nvim 0.12 hands directives a list of nodes, so the
+  -- php_only heredoc/nowdoc injection query dies with
+  -- "attempt to call method 'range' (a nil value)" on any php file containing a heredoc.
+  -- re-register a version that handles both shapes. drop this once we move to the
+  -- nvim-treesitter `main` branch.
+  require 'nvim-treesitter' -- registers the directives; must load before we override one
+  vim.treesitter.query.add_directive('downcase!', function(match, _, source, pred, metadata)
+    local id = pred[2]
+    local node = match[id]
+    if type(node) == 'table' then
+      node = node[#node]
+    end
+    if not node then
+      return
+    end
+    metadata[id] = metadata[id] or {}
+    metadata[id].text = vim.treesitter.get_node_text(node, source, { metadata = metadata[id] }):lower()
+  end, { force = true })
+
   vim.filetype.add({
     extension = {
       es6 = "javascript",
