@@ -3,20 +3,16 @@ local Z = {}
 
 -- Install personal plugins (called before setup)
 function Z.install_plugins()
+  -- nvim-treesitter main installs the supercollider parser and ships its queries,
+  -- so the tree-sitter-supercollider checkout isn't needed here anymore
   vim.pack.add({
     { src = 'https://codeberg.org/MrReason/tidal.nvim' },
-    { src = 'https://github.com/madskjeldgaard/tree-sitter-supercollider' },
   })
 end
 
 function Z.setup()
-  -- Additional treesitter languages for personal projects
-  require('nvim-treesitter.configs').setup({
-    ensure_installed = {
-      'html', 'javascript', 'css', 'scss', 'php',
-      'haskell', 'rust', 'supercollider'  -- Additional for personal
-    },
-  })
+  -- Additional treesitter languages for personal projects (shared ones are in shared.lua)
+  require('shared').treesitter({ 'haskell', 'rust', 'supercollider' })
 
   -- Additional LSP servers for personal projects
   vim.lsp.config("rust-analyzer", {

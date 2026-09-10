@@ -3,8 +3,25 @@ local Z = {}
 
 -- Install shared plugins (called before setup)
 function Z.install_plugins()
+  -- keep parsers in lockstep with the plugin. nvim-treesitter main only guarantees the
+  -- parser revisions pinned in its own lockfile, so a plugin update without a matching
+  -- update() leaves parsers and queries mismatched. must be registered before the first
+  -- vim.pack.add() to also fire on a fresh install
+  vim.api.nvim_create_autocmd('PackChanged', {
+    callback = function(ev)
+      if ev.data.spec.name ~= 'nvim-treesitter' or ev.data.kind == 'delete' then
+        return
+      end
+      if not ev.data.active then
+        vim.cmd.packadd('nvim-treesitter')
+      end
+      -- blocking on purpose. only runs when vim.pack actually changed the plugin
+      require('nvim-treesitter').update():wait(300000)
+    end,
+  })
+
   vim.pack.add({
-    { src = 'https://github.com/nvim-treesitter/nvim-treesitter' },
+    { src = 'https://github.com/nvim-treesitter/nvim-treesitter', version = 'main' },
     { src = 'https://github.com/ellisonleao/gruvbox.nvim' },
     { src = 'https://github.com/neovim/nvim-lspconfig' },
     { src = 'https://github.com/mason-org/mason.nvim' },
@@ -14,6 +31,28 @@ function Z.install_plugins()
     { src = 'https://github.com/nvim-lua/plenary.nvim' },
     -- { src = 'https://github.com/m4xshen/hardtime.nvim' },
     { src = 'https://github.com/numToStr/Comment.nvim' },
+  })
+end
+
+--- installs treesitter parsers and turns highlighting + indenting on for them.
+--- needs the tree-sitter cli (>= 0.26.1) and a c compiler on PATH - main builds parsers
+--- locally instead of shipping them. grab the release binary, not the npm/apt build.
+--- the main branch ships no modules, so each feature is opted into per buffer here.
+--- parser names and filetypes line up for everything we use
+--- @param langs string[] nvim-treesitter language names
+function Z.treesitter(langs)
+  require('nvim-treesitter').install(langs)
+
+  vim.api.nvim_create_autocmd('FileType', {
+    pattern = langs,
+    callback = function()
+      -- install() is async, so on a fresh machine the first buffer of a filetype can open
+      -- before its parser exists. no highlighting beats an error on every open
+      if not pcall(vim.treesitter.start) then
+        return
+      end
+      vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+    end,
   })
 end
 
@@ -58,19 +97,6 @@ function Z.setup()
   vim.keymap.set('n', '<C-j>', '<C-w>j')
   vim.keymap.set('n', '<C-k>', '<C-w>k')
   vim.keymap.set('n', '<C-l>', '<C-w>l')
-
-  -- Shared plugins
-  vim.pack.add({
-    { src = 'https://github.com/nvim-treesitter/nvim-treesitter' },
-    { src = 'https://github.com/ellisonleao/gruvbox.nvim' },
-    { src = 'https://github.com/neovim/nvim-lspconfig' },
-    { src = 'https://github.com/mason-org/mason.nvim' },
-    -- this isn't working how i want '{ src = 'https://github.com/tpope/vim-sleuth' },
-    { src = 'https://github.com/rafamadriz/friendly-snippets' },
-    { src = 'https://github.com/windwp/nvim-autopairs' },
-    { src = 'https://github.com/nvim-lua/plenary.nvim' },
-    -- { src = 'https://github.com/m4xshen/hardtime.nvim' },
-  })
 
   -- Mini.nvim setup
   require 'mason'.setup()
@@ -118,39 +144,14 @@ function Z.setup()
       end)
   })
 
-  -- Treesitter (base config, languages can be added per-environment)
-  require 'nvim-treesitter.configs'.setup({
-    indent = { enable = true },
-    ensure_installed = {
-      'html',
-      'javascript',
-      'css',
-      'scss',
-      'php',
-    },
-    highlight = { enable = true },
+  -- Treesitter (base languages, more can be added per-environment via Z.treesitter)
+  Z.treesitter({
+    'html',
+    'javascript',
+    'css',
+    'scss',
+    'php',
   })
-  vim.treesitter.language.register('javascript', 'es6')
-
-  -- nvim-treesitter master is archived and its `#downcase!` directive still assumes
-  -- match[id] is a single TSNode. nvim 0.12 hands directives a list of nodes, so the
-  -- php_only heredoc/nowdoc injection query dies with
-  -- "attempt to call method 'range' (a nil value)" on any php file containing a heredoc.
-  -- re-register a version that handles both shapes. drop this once we move to the
-  -- nvim-treesitter `main` branch.
-  require 'nvim-treesitter' -- registers the directives; must load before we override one
-  vim.treesitter.query.add_directive('downcase!', function(match, _, source, pred, metadata)
-    local id = pred[2]
-    local node = match[id]
-    if type(node) == 'table' then
-      node = node[#node]
-    end
-    if not node then
-      return
-    end
-    metadata[id] = metadata[id] or {}
-    metadata[id].text = vim.treesitter.get_node_text(node, source, { metadata = metadata[id] }):lower()
-  end, { force = true })
 
   vim.filetype.add({
     extension = {
