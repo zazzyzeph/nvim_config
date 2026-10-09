@@ -31,6 +31,7 @@ function Z.install_plugins()
     { src = 'https://github.com/nvim-lua/plenary.nvim' },
     -- { src = 'https://github.com/m4xshen/hardtime.nvim' },
     { src = 'https://github.com/numToStr/Comment.nvim' },
+    { src = 'https://github.com/mfussenegger/nvim-dap' },
   })
 end
 
@@ -54,6 +55,65 @@ function Z.treesitter(langs)
       vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
     end,
   })
+end
+
+--- wires up nvim-dap for php/xdebug and its keymaps.
+--- the adapter is the built vscode-php-debug bundle, which we only register when it's
+--- actually on disk - keymaps are set either way so <leader>db still toggles breakpoints
+--- on a machine where the adapter was never built
+local function dap_setup()
+  local dap = require('dap')
+
+  -- built output moved out/ -> dist/ somewhere around v1.32, so check both
+  local adapter_paths = {
+    '/home/deploy/vscode-php-debug/dist/phpDebug.js',
+    '/home/deploy/vscode-php-debug/out/phpDebug.js',
+  }
+  for _, path in ipairs(adapter_paths) do
+    if vim.uv.fs_stat(path) then
+      dap.adapters.php = {
+        type = 'executable',
+        command = 'node',
+        args = { path },
+      }
+      break
+    end
+  end
+
+  -- 'launch' is what vscode-php-debug calls its listen mode - it isn't launching php,
+  -- it's opening a dbgp listener on 9003 and waiting for xdebug to connect back.
+  -- debugging code running in the vagrant vm from the host also needs pathMappings
+  -- ({ ['/vagrant/path'] = '/host/path' }) or breakpoints won't bind
+  dap.configurations.php = {
+    {
+      type = 'php',
+      request = 'launch',
+      name = 'Listen for Xdebug',
+      port = 9003,
+    },
+  }
+
+  vim.keymap.set('n', '<F5>', dap.continue)
+  vim.keymap.set('n', '<F10>', dap.step_over)
+  vim.keymap.set('n', '<F11>', dap.step_into)
+  vim.keymap.set('n', '<F12>', dap.step_out)
+  vim.keymap.set('n', '<leader>db', dap.toggle_breakpoint)
+  vim.keymap.set('n', '<leader>dt', dap.terminate)
+  vim.keymap.set('n', '<leader>dr', dap.repl.toggle)
+  vim.keymap.set({ 'n', 'v' }, '<leader>dh', function()
+    require('dap.ui.widgets').hover()
+  end)
+  vim.keymap.set({ 'n', 'v' }, '<leader>dp', function()
+    require('dap.ui.widgets').preview()
+  end)
+  vim.keymap.set('n', '<leader>df', function()
+    local widgets = require('dap.ui.widgets')
+    widgets.centered_float(widgets.frames)
+  end)
+  vim.keymap.set('n', '<leader>ds', function()
+    local widgets = require('dap.ui.widgets')
+    widgets.centered_float(widgets.scopes)
+  end)
 end
 
 function Z.setup()
@@ -240,6 +300,9 @@ function Z.setup()
 
   -- Diagnostics
   vim.diagnostic.config({ virtual_text = true })
+
+  -- php/xdebug debugging - keymaps live under <leader>d, see KEYMAPS.md
+  dap_setup()
 end
 
 return Z

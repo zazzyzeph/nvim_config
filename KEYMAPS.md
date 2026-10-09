@@ -52,7 +52,7 @@ Leader key: `<Space>`
 | `<leader>le` | n | Open diagnostic float |
 | `<C-k>` | i (insert) | Signature help |
 
-## Debugging — work only (work.lua, nvim-dap)
+## Debugging — PHP/Xdebug (shared.lua, nvim-dap)
 
 | Keymap | Mode | Action |
 |---|---|---|
