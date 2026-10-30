@@ -30,7 +30,6 @@ function Z.install_plugins()
     { src = 'https://github.com/windwp/nvim-autopairs' },
     { src = 'https://github.com/nvim-lua/plenary.nvim' },
     -- { src = 'https://github.com/m4xshen/hardtime.nvim' },
-    { src = 'https://github.com/numToStr/Comment.nvim' },
     { src = 'https://github.com/mfussenegger/nvim-dap' },
   })
 end
@@ -145,6 +144,18 @@ function Z.setup()
   vim.o.autoindent = true
   vim.o.conceallevel = 1
 
+  vim.api.nvim_create_autocmd('FileType', {
+    pattern = 'php',
+    callback = function()
+      -- the global `-` above turns `$product->id` into a `product-` word, which breaks
+      -- ciw / * / dw on php variables
+      vim.opt_local.iskeyword:remove('-')
+      -- built-in gc defaults php to /* */. html regions still get <!-- --> since gc
+      -- picks the commentstring from the treesitter language under the cursor
+      vim.bo.commentstring = '// %s'
+    end,
+  })
+
   -- Shared keymaps
   vim.keymap.set('n', '<leader>w', ':write<CR>')
   vim.keymap.set('n', '<leader>q', ':quit<CR>')
@@ -160,7 +171,6 @@ function Z.setup()
 
   -- Mini.nvim setup
   require 'mason'.setup()
-  require 'Comment'.setup()
   -- require 'hardtime'.setup()
   require 'mini.pick'.setup()
   require 'mini.extra'.setup()
@@ -213,6 +223,11 @@ function Z.setup()
     'css',
     'scss',
     'php',
+    -- not opened directly, but php's injection queries ask for them: docblocks,
+    -- <<<SQL heredocs, and preg_* patterns
+    'phpdoc',
+    'sql',
+    'regex',
   })
 
   vim.filetype.add({
@@ -225,15 +240,8 @@ function Z.setup()
   vim.api.nvim_create_autocmd('LspAttach', {
     group = vim.api.nvim_create_augroup('my.lsp', {}),
     callback = function(args)
-      local client = assert(vim.lsp.get_client_by_id(args.data.client_id))
-      if client:supports_method('textDocument/completion') then
-        local chars = {}
-        for i = 32, 126 do
-          table.insert(chars, string.char(i))
-        end
-        client.server_capabilities.completionProvider.triggerCharacters = chars
-        vim.lsp.completion.enable(true, client.id, args.buf, { autotrigger = true })
-      end
+      -- completion is handled by mini.completion. don't also enable vim.lsp.completion
+      -- here, the two fight over the popup and expand snippets with different engines
 
       -- mini.operators claims `gr` for its replace operator and removes Neovim's
       -- default grn/gra/gri/grr/grt LSP maps, so re-home them under <leader>l
@@ -250,7 +258,6 @@ function Z.setup()
       vim.keymap.set('i', '<C-k>', vim.lsp.buf.signature_help, opts)
     end,
   })
-  vim.cmd('set completeopt+=noselect')
 
   -- Shared LSP servers (PHP, HTML, CSS, JS/TS)
   vim.lsp.config("lua_ls", {
@@ -262,10 +269,19 @@ function Z.setup()
       }
     }
   })
+  -- cmd/filetypes/root_markers come from nvim-lspconfig. its root_markers include .git,
+  -- which we need - legacy zen cart checkouts may not have a root composer.json, and
+  -- without a root intelephense
+  -- runs single-file and can't follow definitions into extra_functions/ etc
   vim.lsp.config("intelephense", {
-    cmd = { "intelephense", "--stdio" },
-    filetypes = { 'php' },
-    root_markers = { "composer.json" }
+    settings = {
+      intelephense = {
+        files = {
+          -- default is 1MB, anything bigger silently isn't indexed
+          maxSize = 5000000,
+        },
+      },
+    },
   })
   vim.lsp.config("vscode-html-language-server", {
     cmd = { 'vscode-html-language-server', '--stdio' },

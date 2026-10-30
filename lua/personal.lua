@@ -31,7 +31,6 @@ function Z.setup()
 
   -- Enable all LSP servers including personal ones
   vim.lsp.enable({
-    "php",
     "lua_ls",
     "intelephense",
     "vscode-html-language-server",
