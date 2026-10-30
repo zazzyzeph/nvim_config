@@ -97,6 +97,10 @@ local function dap_setup()
   vim.keymap.set('n', '<F11>', dap.step_into)
   vim.keymap.set('n', '<F12>', dap.step_out)
   vim.keymap.set('n', '<leader>db', dap.toggle_breakpoint)
+  vim.keymap.set('n', '<leader>dB', function()
+    dap.set_breakpoint(vim.fn.input('condition: '))
+  end)
+  vim.keymap.set('n', '<leader>dc', dap.run_to_cursor)
   vim.keymap.set('n', '<leader>dt', dap.terminate)
   vim.keymap.set('n', '<leader>dr', dap.repl.toggle)
   vim.keymap.set({ 'n', 'v' }, '<leader>dh', function()
@@ -113,6 +117,43 @@ local function dap_setup()
     local widgets = require('dap.ui.widgets')
     widgets.centered_float(widgets.scopes)
   end)
+end
+
+--- yanks a github permalink to the current line, or the selected lines in visual mode.
+--- pinned to HEAD's commit, so the link 404s until that commit is pushed
+local function yank_github_permalink()
+  local file = vim.fn.expand('%:p')
+  local function git(args)
+    local cmd = vim.list_extend({ 'git', '-C', vim.fn.fnamemodify(file, ':h') }, args)
+    local res = vim.system(cmd, { text = true }):wait()
+    if res.code ~= 0 then
+      return nil
+    end
+    return vim.trim(res.stdout)
+  end
+
+  local remote = git({ 'remote', 'get-url', 'origin' })
+  local sha = git({ 'rev-parse', 'HEAD' })
+  -- path from the repo root, empty if the file isn't tracked
+  local path = git({ 'ls-files', '--full-name', '--', file })
+  if not remote or not sha or not path or path == '' then
+    vim.notify('not a tracked file in a repo with an origin remote', vim.log.levels.WARN)
+    return
+  end
+
+  -- git@github.com:owner/repo.git and https://github.com/owner/repo.git -> https://github.com/owner/repo
+  local repo_url = remote:gsub('^git@([^:]+):', 'https://%1/'):gsub('%.git$', '')
+
+  -- line('v') is the other end of a visual selection, and just the cursor line in normal mode
+  local first, last = vim.fn.line('v'), vim.fn.line('.')
+  if first > last then
+    first, last = last, first
+  end
+  local anchor = first == last and ('#L' .. first) or ('#L' .. first .. '-L' .. last)
+
+  local url = repo_url .. '/blob/' .. sha .. '/' .. path .. anchor
+  vim.fn.setreg('+', url)
+  vim.notify(url)
 end
 
 function Z.setup()
@@ -253,6 +294,9 @@ function Z.setup()
       vim.keymap.set('n', '<leader>lt', vim.lsp.buf.type_definition, opts)
       vim.keymap.set('n', '<leader>ld', vim.lsp.buf.definition, opts)
       vim.keymap.set('n', '<leader>ls', vim.lsp.buf.document_symbol, opts)
+      -- live: the prompt is sent to the server as the query, so it doesn't pull every
+      -- symbol in the project up front
+      vim.keymap.set('n', '<leader>lS', ":Pick lsp scope='workspace_symbol_live'<CR>", opts)
       vim.keymap.set('n', '<leader>lh', vim.lsp.buf.hover, opts)
       vim.keymap.set('n', '<leader>le', vim.diagnostic.open_float, opts)
       vim.keymap.set('i', '<C-k>', vim.lsp.buf.signature_help, opts)
@@ -271,8 +315,8 @@ function Z.setup()
   })
   -- cmd/filetypes/root_markers come from nvim-lspconfig. its root_markers include .git,
   -- which we need - legacy zen cart checkouts may not have a root composer.json, and
-  -- without a root intelephense
-  -- runs single-file and can't follow definitions into extra_functions/ etc
+  -- without a root intelephense runs single-file and can't follow definitions into
+  -- extra_functions/ etc
   vim.lsp.config("intelephense", {
     settings = {
       intelephense = {
@@ -291,15 +335,26 @@ function Z.setup()
     cmd = { 'vscode-css-language-server', '--stdio' },
     filetypes = { 'css', 'scss' },
   })
+  -- php is the point here, templates are mostly markup. it only offers expansions in
+  -- html regions, not inside <?php blocks. left off css/scss (lspconfig's default) so
+  -- `m10`-style abbreviations don't crowd the css server's completions
+  vim.lsp.config("emmet_language_server", {
+    filetypes = { 'html', 'php' },
+  })
   vim.lsp.config("typescript-language-server", {
     cmd = { 'typescript-language-server', '--stdio' },
     filetypes = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact' },
   })
 
   -- Keymaps for mini.pick and files
-  vim.keymap.set('n', '<leader>t', vim.lsp.buf.format)
+  -- in visual mode this formats just the selection - keeps diffs small in legacy files
+  vim.keymap.set({ 'n', 'x' }, '<leader>t', vim.lsp.buf.format)
   vim.keymap.set('n', '<leader>ff', ':Pick files<CR>')
   vim.keymap.set("n", '<leader>fg', ':Pick grep_live<CR>')
+  vim.keymap.set('n', '<leader>fw', function()
+    MiniPick.builtin.grep({ pattern = vim.fn.expand('<cword>') })
+  end, { desc = 'Grep word under cursor' })
+  vim.keymap.set('n', '<leader>fd', ':Pick diagnostic<CR>')
   vim.keymap.set("n", '<leader>fr', ':Pick resume<CR>')
   vim.keymap.set('n', '<leader>fh', ':Pick help<CR>')
   vim.keymap.set('n', '<leader>fb', ':Pick buffers<CR>')
@@ -310,6 +365,12 @@ function Z.setup()
   vim.keymap.set("n", "<leader>yf", function()
     vim.fn.setreg("+", vim.fn.expand("%"))
   end, { desc = "Yank file path to clipboard" })
+  vim.keymap.set({ 'n', 'x' }, '<leader>yl', yank_github_permalink, { desc = 'Yank GitHub permalink' })
+
+  -- git (mini.git / mini.diff)
+  vim.keymap.set('n', '<leader>go', function() MiniDiff.toggle_overlay() end)
+  vim.keymap.set('n', '<leader>gb', ':vertical Git blame -- %<CR>')
+  vim.keymap.set({ 'n', 'x' }, '<leader>gc', function() MiniGit.show_at_cursor() end)
 
   -- Colorscheme
   vim.cmd('colorscheme gruvbox')

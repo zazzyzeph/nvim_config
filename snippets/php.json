@@ -1,0 +1,19 @@
+{
+  "docblock": {
+    "prefix": "doc",
+    "description": "function docblock - one-line purpose, informal @param/@return",
+    "body": [
+      "/**",
+      " * ${1:what it does}",
+      " *",
+      " * @param ${2:int} \\$${3:pid} ${4:part_id}",
+      " * @return ${5:string html}",
+      " */"
+    ]
+  },
+  "echo escaped": {
+    "prefix": "hsc",
+    "description": "<?= htmlspecialchars() ?>",
+    "body": "<?= htmlspecialchars($1) ?>$0"
+  }
+}

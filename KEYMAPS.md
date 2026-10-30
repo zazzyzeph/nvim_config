@@ -12,7 +12,9 @@ Leader key: `<Space>`
 | `<leader>yy` | n, v, x | Yank to system clipboard |
 | `<leader>xx` | n, v, x | Delete to system clipboard |
 | `<leader>yf` | n | Yank current file's relative path to clipboard |
-| `<leader>t` | n | Format buffer (`vim.lsp.buf.format`) |
+| `<leader>yl` | n, x | Yank GitHub permalink to current line / selected lines (pinned to HEAD) |
+| `<leader>t` | n, x | Format buffer, or just the selection in visual mode (`vim.lsp.buf.format`) |
+| `gc` / `gcc` | n, x | Comment (built-in; picks `//` / `<!-- -->` per treesitter region in php files) |
 
 ## Window Navigation (shared.lua)
 
@@ -29,6 +31,8 @@ Leader key: `<Space>`
 |---|---|---|
 | `<leader>ff` | n | Pick files |
 | `<leader>fg` | n | Live grep |
+| `<leader>fw` | n | Grep word under cursor |
+| `<leader>fd` | n | Pick diagnostics |
 | `<leader>fr` | n | Resume last picker |
 | `<leader>fh` | n | Pick help tags |
 | `<leader>fb` | n | Pick buffers |
@@ -48,9 +52,19 @@ Leader key: `<Space>`
 | `<leader>lt` | n | Type definition |
 | `<leader>ld` | n | Definition |
 | `<leader>ls` | n | Document symbols |
+| `<leader>lS` | n | Workspace symbols (live query, mini.extra picker) |
 | `<leader>lh` | n | Hover |
 | `<leader>le` | n | Open diagnostic float |
 | `<C-k>` | i (insert) | Signature help |
+
+## Git (mini.git, mini.diff)
+
+| Keymap | Mode | Action |
+|---|---|---|
+| `<leader>go` | n | Toggle diff overlay (inline changes vs index) |
+| `<leader>gb` | n | Blame current file (vertical split) |
+| `<leader>gc` | n, x | Show git data at cursor (commit under cursor, line history) |
+| `]h` / `[h` | n | Next/previous hunk (mini.diff default) |
 
 ## Debugging — PHP/Xdebug (shared.lua, nvim-dap)
 
@@ -61,6 +75,8 @@ Leader key: `<Space>`
 | `<F11>` | n | Step into |
 | `<F12>` | n | Step out |
 | `<leader>db` | n | Toggle breakpoint |
+| `<leader>dB` | n | Set conditional breakpoint (prompts for condition) |
+| `<leader>dc` | n | Run to cursor |
 | `<leader>dt` | n | Terminate session |
 | `<leader>dr` | n | Toggle REPL |
 | `<leader>dh` | n, v | Hover widget |

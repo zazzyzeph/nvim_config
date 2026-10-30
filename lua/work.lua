@@ -15,6 +15,7 @@ function Z.setup()
     "vscode-html-language-server",
     "vscode-css-language-server",
     "typescript-language-server",
+    "emmet_language_server",
   })
 end
 
